@@ -1,6 +1,6 @@
 {
   "name": "@anyhowstep/json-recursive",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "stringify() and parse() recursive objects",
   "main": "dist/src/main/index.js",
   "types": "dist/src/main/index.d.ts",
