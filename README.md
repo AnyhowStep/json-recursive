@@ -87,6 +87,20 @@ const obj = json.parse(str);
 
 -----
 
+### Caveats
+
+As you can see, recursive objects have the structure,
+
+```ts
+{ $recursive : string[] }
+```
+
+Therefore, in general `$recursive` is a reserved field.
+
+`TODO: Maybe allow one to set the field to use for recursion?`
+
+-----
+
 ### `ReplacerDelegate`
 
 `stringify()` allows you to use a `ReplacerDelegate`.
