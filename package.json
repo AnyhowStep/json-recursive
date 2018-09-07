@@ -1,0 +1,27 @@
+{
+  "name": "@anyhowstep/json-recursive",
+  "version": "1.0.0",
+  "description": "stringify() and parse() recursive objects",
+  "main": "dist/src/main/index.js",
+  "types": "dist/src/main/index.d.ts",
+  "scripts": {
+    "test": "ts-node",
+    "test-all": "ts-node ./src/test/test-all.ts",
+    "build": "(rm -r ./dist || true) && tsc -d --diagnostics"
+  },
+  "author": "anyhowstep",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AnyhowStep/json-recursive"
+  },
+  "dependencies": {
+    "schema-decorator": "^2.38.0"
+  },
+  "devDependencies": {
+    "@types/tape": "^4.2.32",
+    "tape": "^4.9.1",
+    "ts-node": "^7.0.1",
+    "typescript": "^3.0.1"
+  }
+}
