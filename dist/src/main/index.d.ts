@@ -4,12 +4,12 @@ export declare const ignoreLeadingUnderscoreKey: ReplacerDelegate;
 export declare const includeError: ReplacerDelegate;
 export declare function chainReplacers(...replacers: ReplacerDelegate[]): ReplacerDelegate;
 export declare function toPathStr(path: string[]): string;
-export declare function stringify(raw: any, replacer?: ReplacerDelegate, path?: string[], closed?: {
+export declare function stringify(raw: any, replacer?: ReplacerDelegate, recursionKey?: string, path?: string[], closed?: {
     value: any;
     path: string[];
 }[]): undefined | string;
-export declare function stringifyOrError(raw: any, replacer?: ReplacerDelegate): string;
+export declare function stringifyOrError(raw: any, replacer?: ReplacerDelegate, recursionKey?: string): string;
 export declare function findAtPath(raw: any, path: string[]): any;
-export declare function resolveRecursiveObjects(root: any, cur: any, path?: string[]): any;
-export declare function parse(str: string): any;
-export declare function createStringifyOrError(...replacers: ReplacerDelegate[]): (raw: any) => string;
+export declare function resolveRecursiveObjects(root: any, cur: any, recursionKey?: string, path?: string[]): any;
+export declare function parse(str: string, recursionKey?: string): any;
+export declare function createStringifyOrError(...replacers: ReplacerDelegate[]): (raw: any, recursionKey?: string) => string;

@@ -78,7 +78,7 @@ export function toPathStr (path : string[]) {
     All the other Object instances (including Map, Set, WeakMap, and WeakSet)
     will have only their enumerable properties serialized.
 */
-export function stringify (raw : any, replacer : ReplacerDelegate = defaultReplacer, path : string[] = [], closed : { value : any, path : string[] }[] = []) : undefined|string {
+export function stringify (raw : any, replacer : ReplacerDelegate = defaultReplacer, recursionKey : string = "$recursive", path : string[] = [], closed : { value : any, path : string[] }[] = []) : undefined|string {
     if (path.length == 0) {
         raw = replacer.bind(raw)("", raw);
     }
@@ -130,7 +130,7 @@ export function stringify (raw : any, replacer : ReplacerDelegate = defaultRepla
     for (let entry of closed) {
         if (entry.value === raw) {
             return JSON.stringify({
-                $recursive : entry.path
+                [recursionKey] : entry.path
             });
         }
     }
@@ -141,7 +141,7 @@ export function stringify (raw : any, replacer : ReplacerDelegate = defaultRepla
 
     if (raw.toJSON instanceof Function) {
         const result = raw.toJSON();
-        return stringify(result, replacer, path, closed);
+        return stringify(result, replacer, recursionKey, path, closed);
     }
 
     if (raw instanceof Array) {
@@ -156,6 +156,7 @@ export function stringify (raw : any, replacer : ReplacerDelegate = defaultRepla
             const item = stringify(
                 v,
                 replacer,
+                recursionKey,
                 path.concat(i.toString()),
                 closed
             );
@@ -178,6 +179,7 @@ export function stringify (raw : any, replacer : ReplacerDelegate = defaultRepla
         const item = stringify(
             v,
             replacer,
+            recursionKey,
             path.concat(k),
             closed
         );
@@ -190,8 +192,8 @@ export function stringify (raw : any, replacer : ReplacerDelegate = defaultRepla
     return `{${result.join(",")}}`;
 }
 
-export function stringifyOrError (raw : any, replacer? : ReplacerDelegate) : string {
-    const result = stringify(raw, replacer);
+export function stringifyOrError (raw : any, replacer? : ReplacerDelegate, recursionKey : string = "$recursive") : string {
+    const result = stringify(raw, replacer, recursionKey);
     if (typeof result == "string") {
         return result;
     } else {
@@ -209,13 +211,13 @@ export function findAtPath (raw : any, path : string[]) {
 
 const assertStrArray = sd.array(sd.string());
 
-export function resolveRecursiveObjects (root : any, cur : any, path : string[] = []) : any {
+export function resolveRecursiveObjects (root : any, cur : any, recursionKey : string = "$recursive", path : string[] = []) : any {
     if (cur instanceof Object) {
         const keys = Object.keys(cur);
-        if (keys.length == 1 && keys[0] == "$recursive") {
+        if (keys.length == 1 && keys[0] == recursionKey) {
             //We have an object of the form { $recursive : any }
             const to = assertStrArray(
-                toPathStr(path.concat("$recursive")),
+                toPathStr(path.concat(recursionKey)),
                 cur["$recursive"]
             );
             return findAtPath(root, to);
@@ -225,6 +227,7 @@ export function resolveRecursiveObjects (root : any, cur : any, path : string[] 
                 cur[k] = resolveRecursiveObjects(
                     root,
                     cur[k],
+                    recursionKey,
                     path.concat(k)
                 );
             }
@@ -235,6 +238,7 @@ export function resolveRecursiveObjects (root : any, cur : any, path : string[] 
             cur[i] = resolveRecursiveObjects(
                 root,
                 cur[i],
+                recursionKey,
                 path.concat(i.toString()),
             );
         }
@@ -245,14 +249,14 @@ export function resolveRecursiveObjects (root : any, cur : any, path : string[] 
     }
 }
 
-export function parse (str : string) : any {
+export function parse (str : string, recursionKey : string = "$recursive") : any {
     const raw = JSON.parse(str);
-    return resolveRecursiveObjects(raw, raw);
+    return resolveRecursiveObjects(raw, raw, recursionKey);
 }
 
-export function createStringifyOrError (...replacers : ReplacerDelegate[]) : (raw : any) => string {
+export function createStringifyOrError (...replacers : ReplacerDelegate[]) : (raw : any, recursionKey? : string) => string {
     const replacer = chainReplacers(...replacers);
-    return (raw : any) :string => {
-        return stringifyOrError(raw, replacer);
+    return (raw : any, recursionKey : string = "$recursive") :string => {
+        return stringifyOrError(raw, replacer, recursionKey);
     };
 }
