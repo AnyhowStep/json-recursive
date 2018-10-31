@@ -74,7 +74,7 @@ exports.toPathStr = toPathStr;
     All the other Object instances (including Map, Set, WeakMap, and WeakSet)
     will have only their enumerable properties serialized.
 */
-function stringify(raw, replacer = exports.defaultReplacer, path = [], closed = []) {
+function stringify(raw, replacer = exports.defaultReplacer, recursionKey = "$recursive", path = [], closed = []) {
     if (path.length == 0) {
         raw = replacer.bind(raw)("", raw);
     }
@@ -119,7 +119,7 @@ function stringify(raw, replacer = exports.defaultReplacer, path = [], closed = 
     for (let entry of closed) {
         if (entry.value === raw) {
             return JSON.stringify({
-                $recursive: entry.path
+                [recursionKey]: entry.path
             });
         }
     }
@@ -129,7 +129,7 @@ function stringify(raw, replacer = exports.defaultReplacer, path = [], closed = 
     });
     if (raw.toJSON instanceof Function) {
         const result = raw.toJSON();
-        return stringify(result, replacer, path, closed);
+        return stringify(result, replacer, recursionKey, path, closed);
     }
     if (raw instanceof Array) {
         const result = [];
@@ -139,7 +139,7 @@ function stringify(raw, replacer = exports.defaultReplacer, path = [], closed = 
                 result.push("null");
                 continue;
             }
-            const item = stringify(v, replacer, path.concat(i.toString()), closed);
+            const item = stringify(v, replacer, recursionKey, path.concat(i.toString()), closed);
             result.push((item == undefined) ?
                 "null" :
                 item);
@@ -153,7 +153,7 @@ function stringify(raw, replacer = exports.defaultReplacer, path = [], closed = 
             continue;
         }
         const itemKey = JSON.stringify(k);
-        const item = stringify(v, replacer, path.concat(k), closed);
+        const item = stringify(v, replacer, recursionKey, path.concat(k), closed);
         if (item === undefined) {
             continue;
         }
@@ -162,8 +162,8 @@ function stringify(raw, replacer = exports.defaultReplacer, path = [], closed = 
     return `{${result.join(",")}}`;
 }
 exports.stringify = stringify;
-function stringifyOrError(raw, replacer) {
-    const result = stringify(raw, replacer);
+function stringifyOrError(raw, replacer, recursionKey = "$recursive") {
+    const result = stringify(raw, replacer, recursionKey);
     if (typeof result == "string") {
         return result;
     }
@@ -216,8 +216,8 @@ function parse(str, recursionKey = "$recursive") {
 exports.parse = parse;
 function createStringifyOrError(...replacers) {
     const replacer = chainReplacers(...replacers);
-    return (raw) => {
-        return stringifyOrError(raw, replacer);
+    return (raw, recursionKey = "$recursive") => {
+        return stringifyOrError(raw, replacer, recursionKey);
     };
 }
 exports.createStringifyOrError = createStringifyOrError;
