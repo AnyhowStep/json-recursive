@@ -181,25 +181,25 @@ function findAtPath(raw, path) {
 }
 exports.findAtPath = findAtPath;
 const assertStrArray = sd.array(sd.string());
-function resolveRecursiveObjects(root, cur, path = []) {
+function resolveRecursiveObjects(root, cur, recursionKey = "$recursive", path = []) {
     if (cur instanceof Object) {
         const keys = Object.keys(cur);
-        if (keys.length == 1 && keys[0] == "$recursive") {
+        if (keys.length == 1 && keys[0] == recursionKey) {
             //We have an object of the form { $recursive : any }
-            const to = assertStrArray(toPathStr(path.concat("$recursive")), cur["$recursive"]);
+            const to = assertStrArray(toPathStr(path.concat(recursionKey)), cur["$recursive"]);
             return findAtPath(root, to);
         }
         else {
             //We have a "regular" object of the form { [k : string] : any }
             for (let k in cur) {
-                cur[k] = resolveRecursiveObjects(root, cur[k], path.concat(k));
+                cur[k] = resolveRecursiveObjects(root, cur[k], recursionKey, path.concat(k));
             }
             return cur;
         }
     }
     else if (cur instanceof Array) {
         for (let i = 0; i < cur.length; ++i) {
-            cur[i] = resolveRecursiveObjects(root, cur[i], path.concat(i.toString()));
+            cur[i] = resolveRecursiveObjects(root, cur[i], recursionKey, path.concat(i.toString()));
         }
         return cur;
     }
@@ -209,9 +209,9 @@ function resolveRecursiveObjects(root, cur, path = []) {
     }
 }
 exports.resolveRecursiveObjects = resolveRecursiveObjects;
-function parse(str) {
+function parse(str, recursionKey = "$recursive") {
     const raw = JSON.parse(str);
-    return resolveRecursiveObjects(raw, raw);
+    return resolveRecursiveObjects(raw, raw, recursionKey);
 }
 exports.parse = parse;
 function createStringifyOrError(...replacers) {
