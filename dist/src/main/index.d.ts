@@ -10,6 +10,6 @@ export declare function stringify(raw: any, replacer?: ReplacerDelegate, path?: 
 }[]): undefined | string;
 export declare function stringifyOrError(raw: any, replacer?: ReplacerDelegate): string;
 export declare function findAtPath(raw: any, path: string[]): any;
-export declare function resolveRecursiveObjects(root: any, cur: any, path?: string[]): any;
-export declare function parse(str: string): any;
+export declare function resolveRecursiveObjects(root: any, cur: any, recursionKey?: string, path?: string[]): any;
+export declare function parse(str: string, recursionKey?: string): any;
 export declare function createStringifyOrError(...replacers: ReplacerDelegate[]): (raw: any) => string;
